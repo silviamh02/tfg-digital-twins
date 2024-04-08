@@ -1,0 +1,11 @@
+{
+
+    "topology_path": "/home/silvia/tfg-digital-twins/topology", 
+  
+    "behavior_path": "/home/silvia/tfg-digital-twins/behavior", 
+
+    "mqtt_broker_ip": "172.17.0.2", 
+
+    "mqtt_broker_port": 1883 
+  
+}
