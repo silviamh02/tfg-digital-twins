@@ -49,3 +49,24 @@ def generate_unique_filename_behavior():
     return filename
 
 
+# Función para generar JSON de topología
+def generate_topology_json(topology_path):
+    # Crear el diccionario con los datos de topología
+    topology_json = {
+        "message": "JSON topology de prueba" # Añadir los datos de la topología más adelante!!!
+    }
+    
+    # Obtener el nombre único del archivo
+    filename = generate_unique_filename_topology()
+    
+    # Combinar el nombre de archivo con el path de topología
+    file_path = os.path.join(topology_path, filename)
+    
+    # Escribir el JSON en el archivo
+    with open(file_path, 'w') as json_file:
+        json.dump(topology_json, json_file, indent=4)
+    
+    # Devolver la ruta completa del archivo generado
+    return file_path
+
+
