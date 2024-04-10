@@ -35,3 +35,17 @@ def generate_unique_filename_topology():
     return filename
 
 
+# Función para generar el nombre único del JSON de comportamiento
+def generate_unique_filename_behavior():
+    # Obtener la fecha y hora actual en una estructura de tiempo
+    current_time = time.localtime()
+    
+    # Convertir la estructura de tiempo a un valor EPOCH
+    epoch_time = int(time.mktime(current_time))
+    
+    # Generar el nombre de archivo único utilizando el valor EPOCH
+    filename = f"BEHA_{epoch_time}.json"
+    
+    return filename
+
+
