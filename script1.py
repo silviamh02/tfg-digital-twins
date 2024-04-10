@@ -70,3 +70,23 @@ def generate_topology_json(topology_path):
     return file_path
 
 
+# Función para generar JSON de comportamiento
+def generate_behavior_json(behavior_path):
+    # Crear el diccionario con los datos de comportamiento
+    behavior_json = {
+        "message": "JSON behavior de prueba" # Añadir los datos del comportamiento más adelante!!!
+    }
+    
+    # Obtener el nombre único del archivo
+    filename = generate_unique_filename_behavior()
+    
+    # Combinar el nombre de archivo con el path de topología
+    file_path = os.path.join(behavior_path, filename)
+    
+    # Escribir el JSON en el archivo
+    with open(file_path, 'w') as json_file:
+        json.dump(behavior_json, json_file, indent=4)
+    
+    # Devolver la ruta completa del archivo generado
+    return file_path
+
