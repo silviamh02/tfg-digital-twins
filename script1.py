@@ -21,3 +21,17 @@ def parse_config_file(config_file_path):
     return config_data # Devuelve el diccionario
 
 
+# Función para generar el nombre único del JSON de topología
+def generate_unique_filename_topology():
+    # Obtener la fecha y hora actual en una estructura de tiempo
+    current_time = time.localtime()
+    
+    # Convertir la estructura de tiempo a un valor EPOCH
+    epoch_time = int(time.mktime(current_time))
+    
+    # Generar el nombre de archivo único utilizando el valor EPOCH
+    filename = f"TOPO_{epoch_time}.json"
+    
+    return filename
+
+
