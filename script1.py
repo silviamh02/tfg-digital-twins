@@ -83,33 +83,44 @@ def generate_behavior_json(behavior_path):
     # Devolver la ruta completa del archivo generado
     return file_path
 
-# Función para manejar los eventos de creación de archivos en el directorio de topología
-def handle_topology_change(client, topic, event):
-    if not event.is_directory:  # Ignorar eventos de creación de directorios
-        if event.src_path.endswith('.json'):  # Si el archivo creado es un JSON
-            with open(event.src_path, 'r') as json_file:
-                data = json.load(json_file)
-                message = json.dumps(data)
-                client.publish(topic, message)
 
-# Función para configurar el observador de Watchdog
+# Función para publicar el archivo JSON detectado en un tema MQTT
+def publish_json_file(client, topic, file_path):
+    try:
+        with open(file_path, 'r') as json_file:
+            data = json.load(json_file)
+            message = json.dumps(data)
+            client.publish(topic, message)
+    except json.decoder.JSONDecodeError as e:
+        print(f"Error al cargar el archivo JSON: {e}")
+    except FileNotFoundError as e:
+        print(f"Error: No se pudo encontrar el archivo: {file_path}")
+
+
+# Función watchdog que monitoriza el directorio y llama a la función de publicación
 def watchdog(client, topic, path):
+    # Función para manejar los eventos de creación de archivos en el directorio
+    def handle_directory_change(event):
+        if not event.is_directory:  # Ignorar eventos de creación de directorios
+            if event.src_path.endswith('.json'):  # Si el archivo creado es un JSON
+                publish_json_file(client, topic, event.src_path)
+
     # Instanciar un observador de cambios en el sistema de archivos
     observer = Observer()
-    
+
     # Configurar el manejador de eventos
     event_handler = FileSystemEventHandler()
-    event_handler.on_created = lambda event: handle_topology_change(client, topic, event)
-    
+    event_handler.on_created = handle_directory_change
+
     # Asignar el manejador de eventos al observador
     observer.schedule(event_handler, path, recursive=False)  # Monitorear solo el directorio de topología
-    
+
     # Iniciar el observador
     observer.start()
-    
+
     # Mensaje de confirmación
     print(f"Watchdog está monitoreando el directorio: {path}")
-    
+
     return observer
 
 
@@ -122,7 +133,7 @@ config = parse_config_file("config.json")
 topology_path = config["topology_path"]
 mqtt_broker_ip = config["mqtt_broker_ip"]
 mqtt_broker_port = config["mqtt_broker_port"]
-mqtt_topic = "topology_de_prueba"  # Nombre del tema MQTT al que se publicará la topología
+mqtt_topic = "topology_de_prueba2"  # Nombre del tema MQTT al que se publicará la topología
 
 # Crear un cliente MQTT
 client = mqtt.Client()
