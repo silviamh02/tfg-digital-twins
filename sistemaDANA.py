@@ -131,9 +131,13 @@ config = parse_config_file("config.json")
 
 # Configurar las variables
 topology_path = config["topology_path"]
+behaviour_path = config["behaviour_path"]
+#mgmt_path = config["mgmt_path"]
+
 mqtt_broker_ip = config["mqtt_broker_ip"]
 mqtt_broker_port = config["mqtt_broker_port"]
-mqtt_topic = "topology_de_prueba2"  # Nombre del tema MQTT al que se publicará la topología
+
+mqtt_topic = "TOPOLOGY"  # Nombre del tema MQTT al que se publicará la topología
 
 # Crear un cliente MQTT
 client = mqtt.Client()
@@ -143,6 +147,7 @@ client.connect(mqtt_broker_ip, mqtt_broker_port, 60)
 
 # Configurar Watchdog
 observer = watchdog(client, mqtt_topic, topology_path)
+#observer = watchdog(client, mqtt_topic, path)
 
 # Generar el JSON de topología
 generate_topology_json(topology_path)
