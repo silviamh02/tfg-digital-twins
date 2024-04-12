@@ -6,7 +6,7 @@
 
     "mgmt_path": "/home/silvia/tfg-digital-twins/mgmt",
 
-    "mqtt_broker_ip": "172.17.0.2", 
+    "mqtt_broker_ip": "localhost", 
 
     "mqtt_broker_port": 1883 
   
