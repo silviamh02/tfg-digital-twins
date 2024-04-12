@@ -3,7 +3,7 @@
 El despliegue de este escenario está formado por tres sistemas: sistema DANA, sistema controlador y sistema de gestión. 
 Cuenta con dos scripts de Python (sistemaDANA.py y sistemaControlador.py), un fichero de configuración (config.json) y un fichero de requerimientos (requirements.txt).
 
-![Diagrama del escenario](/assets/images)
+![Diagrama del escenario](assets/images/escenario.png)
 
 ### Sistema DANA
 ...
