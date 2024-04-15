@@ -44,10 +44,29 @@ def subscribe_to_topic(client, topic):
             time.sleep(5)
 
 
+# Función para subir el mensaje a Elasticsearch
+def upload_to_elasticsearch(payload):
+    try:
+        # Parsear el JSON recibido
+        json_data = json.loads(payload)
+
+        # Conectar a Elasticsearch
+        es = Elasticsearch(hosts=["http://localhost:9200"])
+
+        # Subir el JSON a Elasticsearch
+        res = es.index(index="topology", body=json_data)
+        print("Documento subido correctamente a Elasticsearch:", res)
+        
+    except Exception as e:
+        print("Error al subir el documento a Elasticsearch:", e)
+        
+        
 # Función de callback para manejar los mensajes recibidos
 def on_message(client, userdata, message):
     print(f"Mensaje recibido en el tema '{message.topic}': {str(message.payload.decode())}")
-   
+    # Subir el mensaje a Elasticsearch
+    upload_to_elasticsearch(message.payload.decode())
+    
 
 # MAIN -----------------------------------------------------------------------------------------------------------------------------------
 
