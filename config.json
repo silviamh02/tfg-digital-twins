@@ -2,7 +2,7 @@
 
     "topology_path": "/home/silvia/tfg-digital-twins/topology", 
   
-    "behavior_path": "/home/silvia/tfg-digital-twins/behavior", 
+    "behaviour_path": "/home/silvia/tfg-digital-twins/behaviour", 
 
     "mgmt_path": "/home/silvia/tfg-digital-twins/mgmt",
 
