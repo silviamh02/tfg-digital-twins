@@ -4,7 +4,9 @@
   
     "behaviour_path": "/home/silvia/tfg-digital-twins/behaviour", 
 
-    "mgmt_path": "/home/silvia/tfg-digital-twins/mgmt",
+    "mgmt_path": "/home/silvia/tfg-digital-twins/mgmt/mgmt.json",
+
+    "mgmt_json_path": "/home/silvia/tfg-digital-twins/mgmt/mgmt.json",
 
     "mqtt_broker_ip": "localhost", 
 
