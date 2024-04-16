@@ -1,0 +1,17 @@
+{
+    "estado_agente": 0,
+    "configuracion_sistema": {
+        "mosquitto_mqtt": {
+            "puerto": 1883,
+            "ssl_tls": false
+        },
+        "elasticsearch": {
+            "puerto": 9200,
+            "ssl_tls": false
+        },
+        "kibana": {
+            "puerto": 5601,
+            "ssl_tls": false
+        }
+    }
+}

@@ -16,3 +16,8 @@ Cuenta con dos scripts de Python (sistemaDANA.py y sistemaControlador.py), un fi
 
 ## Despliegue
 
+1. Clonar el repositorio de github
+
+2. Crear los directorios 
+    tfg-digital-twins/topology
+    tfg-digital-twins/behaviour
