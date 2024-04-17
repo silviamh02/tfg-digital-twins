@@ -2,7 +2,7 @@
 ## Introducción
 El despliegue de este escenario está formado por tres sistemas: sistema DANA, sistema controlador y sistema de gestión. 
 
-<Cuenta con tres directorios:
+>Cuenta con tres directorios:>
 1. Directorio de gestión: tfg-digital-twins/mgmt
 2. Directorio de topología: tfg-digital-twins/topology
 3. Directorio de comportamiento: tfg-digital-twins/behaviour>
