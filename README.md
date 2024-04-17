@@ -1,5 +1,6 @@
 # Escenario para la comunicación entre el Physical Twin (PT) y el Digital Twin (DT)
 ## Introducción
+<div align="justify">
 El despliegue de este escenario está formado por tres sistemas: sistema DANA, sistema controlador y sistema de gestión. 
 
 **Componentes del repositorio:**
@@ -14,7 +15,6 @@ El despliegue de este escenario está formado por tres sistemas: sistema DANA, s
 6. **Script de python del sistema DANA:** sistemaDANA.py
 7. **Script de python del sistema Controlador:** sistemaControlador.py
 
-<div align="justify">
 En el directorio de gestión se encuentra almacenado el fichero json de configuración del sistema de monitorización, y en los directorios de topología y comportamiento, se almacenan los ficheros json que contienen los datos de topología y comportamiento, respectivamente.
 
 El escenario cuenta con un archivo de configuración (config.json) en el que se definen campos como el path de los JSON de topología, el path de los JSON de comportamiento, la IP del Broker MQTT, el puerto MQTT a utilizar, entre otros valores necesarios. También dispone de un archivo de requerimientos (requirements.txt), utilizado para especificar las dependencias del proyecto, y por último de dos scripts de Python (sistemaDANA.py y sistemaControlador.py).
@@ -87,4 +87,29 @@ El Sistema Controlador permite la comunicación bidireccional entre el Gemelo F�
 ## Despliegue
 
 1. Clonar el repositorio de github
+´´´
+git clone https://github.com/silviamh02/tfg-digital-twins.git
+´´´
+
+2. Instalar todas las dependencias del proyecto especificadas en el fichero de requirements.txt
+´´´
+sudo pip install -r requirements.txt
+´´´
+
+3. Moverse al directorio del repositorio
+´´´
+cd tfg-digital-twins
+´´´
+
+4. Ejecutar el script del sistema Controlador
+´´´
+sudo pytho3 sistemaControlador.py
+´´´
+
+En una nueva terminal:
+5. Ejecutar el script del sistema DANA
+´´´
+sudo pytho3 sistemaDANA.py
+´´´
+
 
