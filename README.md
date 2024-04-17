@@ -87,27 +87,33 @@ El Sistema Controlador permite la comunicación bidireccional entre el Gemelo F�
 ## Despliegue
 
 1. Clonar el repositorio de github
+
 ´´´
 git clone https://github.com/silviamh02/tfg-digital-twins.git
 ´´´
 
 2. Instalar todas las dependencias del proyecto especificadas en el fichero de requirements.txt
+
 ´´´
 sudo pip install -r requirements.txt
 ´´´
 
 3. Moverse al directorio del repositorio
+
 ´´´
 cd tfg-digital-twins
 ´´´
 
 4. Ejecutar el script del sistema Controlador
+
 ´´´
 sudo pytho3 sistemaControlador.py
 ´´´
 
 En una nueva terminal:
+
 5. Ejecutar el script del sistema DANA
+
 ´´´
 sudo pytho3 sistemaDANA.py
 ´´´
