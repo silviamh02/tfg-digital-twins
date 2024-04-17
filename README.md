@@ -14,9 +14,11 @@ El despliegue de este escenario está formado por tres sistemas: sistema DANA, s
 6. **Script de python del sistema DANA:** sistemaDANA.py
 7. **Script de python del sistema Controlador:** sistemaControlador.py
 
+<div style="text-align: justify">
 En el directorio de gestión se encuentra almacenado el fichero json de configuración del sistema de monitorización, y en los directorios de topología y comportamiento, se almacenan los ficheros json que contienen los datos de topología y comportamiento, respectivamente.
 
 El escenario cuenta con un archivo de configuración (config.json) en el que se definen campos como el path de los JSON de topología, el path de los JSON de comportamiento, la IP del Broker MQTT, el puerto MQTT a utilizar, entre otros valores necesarios. También dispone de un archivo de requerimientos (requirements.txt), utilizado para especificar las dependencias del proyecto, y por último de dos scripts de Python (sistemaDANA.py y sistemaControlador.py).
+</div>
 
 ### Descripción del escenario
 ![Diagrama del escenario](assets/images/escenario.png)
