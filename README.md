@@ -21,11 +21,14 @@ El escenario cuenta con un archivo de configuración (config.json) en el que se 
 </div>
 
 ### Descripción del escenario
+
 ![Diagrama del escenario](assets/images/escenario.png)
 
 <div align="justify">
 En el despligue de este escenario se contemplan dos estados principales:
+
 - **Estado 0:** Monitorización del path de topología y generación del json de datos
+
 - **Estado 1:** Monitorización del path de comportamiento y generación de los jsons de datos
 </div>
 
