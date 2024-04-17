@@ -1,10 +1,12 @@
 # Escenario para la comunicación entre el Physical Twin (PT) y el Digital Twin (DT)
 ## Introducción
 El despliegue de este escenario está formado por tres sistemas: sistema DANA, sistema controlador y sistema de gestión. 
-Cuenta con tres directorios:
+
+>Cuenta con tres directorios:
 1. Directorio de gestión: tfg-digital-twins/mgmt
 2. Directorio de topología: tfg-digital-twins/topology
 3. Directorio de comportamiento: tfg-digital-twins/behaviour
+>
 
 En el directorio de gestión se encuentra almacenado el fichero json de configuración del sistema de monitorización, y en los directorios de topología y comportamiento, se almacenan respectivamente, los ficheros json que contienen los datos de topología y comportamiento, para el despliegue de los sistemas.
 
