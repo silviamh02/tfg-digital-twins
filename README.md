@@ -3,16 +3,16 @@
 El despliegue de este escenario está formado por tres sistemas: sistema DANA, sistema controlador y sistema de gestión. 
 
 **Componentes del repositorio:**
-1. Directorio de gestión: tfg-digital-twins/mgmt
-    json configuración sistema monitorización: tfg-digital-twins/mgmt/mgmt.json
-2. Directorio de topología: tfg-digital-twins/topology
-    jsons datos topología: tfg-digital-twins/topology/TOPO_*.json
-3. Directorio de comportamiento: tfg-digital-twins/behaviour
-    jsons datos comportamiento: tfg-digital-twins/behaviour/BEHA_*.json
-4. Fichero de configuración: config.json
-5. Fichero de requerimientos: requirements.txt
-6. Script de python del sistema DANA: sistemaDANA.py
-7. Script de python del sistema Controlador: sistemaControlador.py
+1. **Directorio de gestión:** tfg-digital-twins/mgmt
+    - **json configuración sistema monitorización:** tfg-digital-twins/mgmt/mgmt.json
+2. **Directorio de topología:** tfg-digital-twins/topology
+    - **jsons datos topología:** tfg-digital-twins/topology/TOPO_*.json
+3. **Directorio de comportamiento:** tfg-digital-twins/behaviour
+    - **jsons datos comportamiento:** tfg-digital-twins/behaviour/BEHA_*.json
+4. **Fichero de configuración:** config.json
+5. **Fichero de requerimientos:** requirements.txt
+6. **Script de python del sistema DANA:** sistemaDANA.py
+7. **Script de python del sistema Controlador:** sistemaControlador.py
 
 En el directorio de gestión se encuentra almacenado el fichero json de configuración del sistema de monitorización, y en los directorios de topología y comportamiento, se almacenan los ficheros json que contienen los datos de topología y comportamiento, respectivamente.
 
@@ -21,9 +21,13 @@ El escenario cuenta con un archivo de configuración (config.json) en el que se 
 ### Descripción del escenario
 ![Diagrama del escenario](assets/images/escenario.png)
 
+En el despligue de este escenario se contemplan dos estados principales:
+- **Estado 0:** Monitorización del path de topología y generación del json de datos
+- **Estado 1:** Monitorización del path de comportamiento y generación de los jsons de datos
+
 **Sistema de gestión**
 
-En el contexto de este escenario, el "sistema de gestión" se refiere a un conjunto de componentes y contenedores Docker que se encargan de coordinar y gestionar las operaciones de los sistemas desplegados, así como de administrar los servicios y recursos necesarios para su funcionamiento adecuado. Este sistema se encarga de asegurar que todos los componentes del escenario estén configurados y operativos según las necesidades del proyecto.
+En el contexto de este escenario, el "sistema de gestión" se refiere a un conjunto de componentes y contenedores Docker que se encargan de coordinar y gestionar las operaciones de los sistemas desplegados, así como de administrar los servicios y recursos necesarios para su adecuado funcionamiento. Este sistema se encarga de asegurar que todos los componentes del escenario estén configurados y operativos según las necesidades del proyecto.
 
 El sistema de gestión incluye:
 
@@ -37,21 +41,18 @@ Tal y como se ha comentado previamente, el sistema de gestión también incluye 
 
 En conjunto, el sistema de gestión asegura la correcta operación y gestión efectiva del entorno desplegado, proporcionando los servicios necesarios para la comunicación, almacenamiento y visualización de datos en el sistema.
 
+
 **Sistema DANA**
+
 El Sistema DANA es una herramienta diseñada para la emulación del comportamiento de un sistema en el Gemelo Físico (PT).
 
-El sistema hace uso de la biblioteca watchdog, que se encarga de monitorizar los paths definidos en el archivo de configuración. Inicialmente Cuando detecta un cambio en el archivo de configuraci, realiza las siguientes acciones:
+El sistema hace uso de la biblioteca watchdog, que se encarga de monitorizar los paths definidos en el archivo de configuración. Nada más comenzar el despligue del escenario, se inicializa por defecto el estado del agente a 0, por lo tanto se comienza con la monitorización del directorio de gestión y de topología. 
 
-Estado (Topología):
+En este escenario, watchdog se encarga de monitorizar el directorio de gestión, para detectar cualquier cambio que se produzca en el archivo de configuración (mgmt.json), y de esta forma, poder controlar el cambio de estado y monitorización del directorio correspondiente. Una vez se encuantra en estado 0, watchdog pasa a monitorizar el directorio de topología, para detectar la creación de cualquier archivo json de datos y proceder a su correspondiente publicación en el topic TOPOLOGY. Una vez finalizada la publicación del json, se produce un cambio de estado (estado_agente==1), y watchdog pasa a monitorizar el directorio de comportamiento, nuevamente a la espera de la creación de un json de datos, para su posterior publicación en el topic BEHA_*. 
 
-Obtiene el listado de elementos de red para su posterior uso.
-Lee el JSON y lo envía vía MQTT al topic "TOPOLOGY".
-Detección de Archivo Tipo 2 (Comportamiento):
-
-Trocea el JSON en base a los elementos de red.
-Envía cada "sub JSON" al topic específico vía MQTT.
 
 **Sistema Controlador**
+
 ...
 
 
@@ -60,6 +61,3 @@ Envía cada "sub JSON" al topic específico vía MQTT.
 
 1. Clonar el repositorio de github
 
-2. Crear los directorios 
-    tfg-digital-twins/topology
-    tfg-digital-twins/behaviour
