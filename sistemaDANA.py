@@ -38,25 +38,6 @@ def generate_unique_filename_behaviour():
     
     return filename
 
-# # Función para generar JSON de topología
-# def generate_topology_json(topology_path):
-#     # Crear el diccionario con los datos de topología
-#     topology_json = {
-#         "message": "JSON topology de prueba" # Añadir los datos de la topología más adelante!!!
-#     }
-    
-#     # Obtener el nombre único del archivo
-#     filename = generate_unique_filename_topology()
-    
-#     # Combinar el nombre de archivo con el path de topología
-#     file_path = os.path.join(topology_path, filename)
-    
-#     # Escribir el JSON en el archivo
-#     with open(file_path, 'w') as json_file:
-#         json.dump(topology_json, json_file, indent=4)
-    
-#     # Devolver la ruta completa del archivo generado
-#     return file_path
 
 # Función para generar JSON de topología
 def generate_topology_json(topology_path, topology_message_file_path):
@@ -96,27 +77,6 @@ def generate_behaviour_json(behaviour_path, behaviour_message_file_path):
     
     # Devolver la ruta completa del archivo generado
     return file_path
-
-
-# # Función para generar JSON de comportamiento
-# def generate_behavior_json(behavior_path):
-#     # Crear el diccionario con los datos de comportamiento
-#     behavior_json = { 
-#         "message": "JSON behavior de prueba" # Añadir los datos del comportamiento más adelante!!!
-#     }
-    
-#     # Obtener el nombre único del archivo
-#     filename = generate_unique_filename_behavior()
-    
-#     # Combinar el nombre de archivo con el path de topología
-#     file_path = os.path.join(behavior_path, filename)
-    
-#     # Escribir el JSON en el archivo
-#     with open(file_path, 'w') as json_file:
-#         json.dump(behavior_json, json_file, indent=4)
-    
-#     # Devolver la ruta completa del archivo generado
-#     return file_path
 
 
 # Función para publicar el archivo JSON detectado en un tema MQTT
@@ -208,19 +168,6 @@ def trocear_json(behaviour_json_path, network_elements, mqtt_client, mqtt_topics
         network_element_json = {
             "network_elements": [behaviour_json["network_elements"][i]]
         }
-        
-        # # Guardar el nuevo JSON en un archivo separado
-        # filename = f"network_element_{i + 1}.json"
-        # file_path = os.path.join(os.path.dirname(behaviour_json_path), filename)
-        
-        # with open(file_path, 'w') as new_file:
-        #     json.dump(network_element_json, new_file, indent=4)
-        
-        # print(f"Se ha troceado el network_element {network_element} en el archivo {filename}.\n")
-        
-        # # Publicar el archivo JSON en el tema MQTT correspondiente
-        # publish_json_file(mqtt_client, mqtt_topics[i], file_path)
-        # print(f"Publicando el archivo {file_path} en el tema {mqtt_topics[i]}.\n")
         
         # Publicar el nuevo JSON en el tema MQTT correspondiente
         message = json.dumps(network_element_json)
@@ -373,7 +320,6 @@ while True:
         # Generar el JSON de topología
         topology_file_path = generate_topology_json(topology_path, topology_message_file_path)
         print(f"Se ha generado un JSON de topología en {topology_path}.\n")
-        
         
     # Estado 1: Generar el JSON de comportamiento
     if estado_agente == 1:

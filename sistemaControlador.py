@@ -23,9 +23,9 @@ def publish_json_file(client, topic, file_path):
             message = json.dumps(data)
             client.publish(topic, message)
     except json.decoder.JSONDecodeError as e: # Manejar errores de JSON
-        print(f"Error al cargar el archivo JSON: {e}")
+        print(f"Error al cargar el archivo JSON: {e}.\n")
     except FileNotFoundError as e: # Manejar errores de archivo no encontrado
-        print(f"Error: No se pudo encontrar el archivo: {file_path}")
+        print(f"Error: No se pudo encontrar el archivo: {file_path}.\n")
         
 
 # Función para manejar la suscripción a un topic
@@ -35,17 +35,17 @@ def subscribe_to_topic(client, topic):
         try:
             # Intentar suscribirse al tema
             client.subscribe(topic)
-            print(f"Subscrito al tema {topic}")
+            print(f"Subscrito al topic {topic}.\n")
             subscribed = True
         except Exception as e:
             # Manejar cualquier excepción y esperar antes de intentar de nuevo
-            print(f"No se pudo suscribir al tema {topic}. Error: {e}")
-            print("Intentando nuevamente en 5 segundos...")
+            print(f"No se pudo suscribir al tema {topic}. Error: {e}.\n")
+            print("Intentando nuevamente en 5 segundos...\n")
             time.sleep(5)
 
 
 # Función para subir el mensaje a Elasticsearch
-def upload_to_elasticsearch(payload):
+def upload_topology_to_elasticsearch(payload):
     try:
         # Parsear el JSON recibido
         json_data = json.loads(payload)
@@ -55,26 +55,150 @@ def upload_to_elasticsearch(payload):
 
         # Subir el JSON a Elasticsearch
         res = es.index(index="topology", body=json_data)
-        print("Documento subido correctamente a Elasticsearch:", res)
+        print("Documento subido correctamente a Elasticsearch:", res, "\n")
         
     except Exception as e:
-        print("Error al subir el documento a Elasticsearch:", e)
+        print("Error al subir el documento a Elasticsearch:", e, "\n")
         
+
+# Función para subir el mensaje a Elasticsearch
+def upload_behaviour_to_elasticsearch(payload):
+    try:
+        # Parsear el JSON recibido
+        json_data = json.loads(payload)
+
+        # Conectar a Elasticsearch
+        es = Elasticsearch(hosts=["http://localhost:9200"])
+
+        # Subir el JSON a Elasticsearch
+        res = es.index(index="behaviour", body=json_data)
+        print("Documento subido correctamente a Elasticsearch:", res, "\n")
         
+    except Exception as e:
+        print("Error al subir el documento a Elasticsearch:", e, "\n")
+        
+# # Función para subir el mensaje a Elasticsearch
+# def upload_behaviour_to_elasticsearch(payload):
+#     try:
+#         # Parsear el JSON recibido
+#         json_data = json.loads(payload)
+
+#         # Conectar a Elasticsearch
+#         es = Elasticsearch(hosts=["http://localhost:9200"])
+#         print("Conexión establecido con Elasticsearch.\n")
+
+#         # Extraer el número del elemento de red del JSON
+#         network_element_number = int(json_data["id"].split("_")[-1])
+#         print("Número del elemento de red:", network_element_number, "\n")
+            
+#         # Construir el nombre del índice utilizando el número del elemento de red
+#         index_name = f"beha_pt2mano/agent/net_elem_{network_element_number}"
+#         print("Nombre del índice:", index_name, "\n")
+            
+#         # Subir el JSON a Elasticsearch en el índice correspondiente
+#         res = es.index(index=index_name, body=json_data)
+#         print("Documento subido correctamente a Elasticsearch:", res, "\n")
+        
+#     except Exception as e:
+#         print("Error al subir el documento a Elasticsearch:", e, "\n")
+  
+  
+# Función para obtener la lista de elementos de red
+def obtener_network_elements(payload):
+    try:
+        # Parsear el JSON del payload
+        topology_data = json.loads(payload)
+        
+        # Obtener la lista de elementos de red del JSON
+        network_elements = [element["id"] for element in topology_data.get("network_elements", [])]
+        return network_elements
+    except json.decoder.JSONDecodeError as e:
+        print(f"Error al cargar el JSON de topología: {e}.\n")
+        return None
+
+          
+# Función para construir el tema MQTT 
+def construir_temas_MQTT(prefijo, array):
+    # Inicializar una lista vacía para almacenar los temas MQTT
+    temas_MQTT = []  
+    # Iterar sobre todos los elementos del array
+    for network_element in array:
+        # Dividir el elemento usando '_' como separador y seleccionar la última parte
+        numero = network_element.split('_')[-1]
+        # Construir el tema MQTT concatenando el prefijo con el número obtenido
+        tema_MQTT = prefijo + numero
+        # Agregar el tema MQTT a la lista de temas
+        temas_MQTT.append(tema_MQTT)
+    
+    return temas_MQTT
+
+
+# Función para construir el indice de comportamiento de MQTT 
+def construir_indices_elasticsearch(prefijo, array):
+    # Inicializar una lista vacía para almacenar los indices de elasticsearch
+    indices_elasticsearch = []  
+    # Iterar sobre todos los elementos del array
+    for network_element in array:
+        # Dividir el elemento usando '_' como separador y seleccionar la última parte
+        numero = network_element.split('_')[-1]
+        # Construir el tema MQTT concatenando el prefijo con el número obtenido
+        index_elasticsearch = prefijo + numero
+        # Agregar el tema MQTT a la lista de temas
+        indices_elasticsearch.append(index_elasticsearch)
+    
+    return indices_elasticsearch
+
+       
 # Función de callback para manejar los mensajes recibidos
 def on_message(client, userdata, message):
-    #print(f"Mensaje recibido en el topic '{message.topic}': {str(message.payload.decode())}")
+    #print(f"Mensaje recibido en el topic '{message.topic}': {str(message.payload.decode())}.\n")
     print(f"Mensaje recibido en el topic '{message.topic}'.\n")
+    
+    global network_elements
+    global mqtt_topics
 
-    # if message.topic == mqtt_topic_topology:
-    #     print("Subiendo mensaje a Elasticsearch...")
-    #     upload_to_elasticsearch(message.payload.decode())
+    if message.topic == mqtt_topic_topology:
+        # Obtener la lista de network_elements  
+        network_elements = obtener_network_elements(message.payload.decode())
+        print("El array network_elements contiene:", network_elements,".\n")
+                        
+        # Obtener los temas MQTT para los network_elements
+        mqtt_topics = construir_temas_MQTT("BEHA_PT2MANO/AGENT/NET_ELEM_", network_elements)
+        print("El array de temas contiene:", mqtt_topics,".\n")
         
-    # elif message.topic == mqtt_topic_behaviour:
-    #     print("Subiendo mensaje a Elasticsearch...")
-    #     upload_to_elasticsearch(message.payload.decode())
-    # Subir el mensaje a Elasticsearch
-    upload_to_elasticsearch(message.payload.decode())
+        # Subir el mensaje a Elasticsearch
+        upload_topology_to_elasticsearch(message.payload.decode())
+        print("El mensaje se ha subido a Elasticsearch en el index 'topology'.\n")
+        
+        # Suscribirse a los temas MQTT de los network_elements
+        for topic in mqtt_topics:
+            subscribe_to_topic(client, topic)
+                    
+    # Si el mensaje proviene de un network_element
+    elif message.topic in mqtt_topics:
+        try:
+            # Copiar el mensaje original
+            modified_payload = message.payload
+            
+            # Convertir el payload a un diccionario
+            payload_dict = json.loads(modified_payload)
+            
+            # Agregar el campo 'comm_channel' al diccionario
+            payload_dict['comm_channel'] = 'PT2MANO'
+            
+            # Convertir el diccionario modificado de vuelta a JSON
+            modified_payload = json.dumps(payload_dict)
+            
+            # # Obtener los indices de elasticsearch para los network_elements
+            # indices_elasticsearch = construir_indices_elasticsearch("beha_pt2mano/agent/net_elem_", network_elements)
+            # print("El array de indices contiene:", indices_elasticsearch,".\n")
+            
+            upload_behaviour_to_elasticsearch(modified_payload)
+            print("El mensaje se ha subido a Elasticsearch en el index 'behaviour'.\n")
+        
+        except json.decoder.JSONDecodeError as e:
+            print(f"Error al decodificar el JSON del mensaje: {e}.\n")
+   
     
 
 # MAIN -----------------------------------------------------------------------------------------------------------------------------------
@@ -84,6 +208,7 @@ config = parse_config_file("config.json")
 
 # Configurar las variables
 topology_path = config["topology_path"]
+topology_message_file_path = config["topology_message_file_path"]
 behaviour_path = config["behaviour_path"]
 mgmt_path = config["mgmt_path"]
 
@@ -91,7 +216,7 @@ mqtt_broker_ip = config["mqtt_broker_ip"]
 mqtt_broker_port = config["mqtt_broker_port"]
 
 mqtt_topic_topology = "TOPOLOGY"  # Nombre del tema MQTT al que se publicará la topología
-mqtt_topic_behaviour = "BEHAVIOUR"  # Nombre del tema MQTT para el comportamiento
+
 
 # Crear un cliente MQTT
 client = mqtt.Client()
