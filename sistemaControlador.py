@@ -63,7 +63,16 @@ def upload_to_elasticsearch(payload):
         
 # Función de callback para manejar los mensajes recibidos
 def on_message(client, userdata, message):
-    print(f"Mensaje recibido en el tema '{message.topic}': {str(message.payload.decode())}")
+    #print(f"Mensaje recibido en el topic '{message.topic}': {str(message.payload.decode())}")
+    print(f"Mensaje recibido en el topic '{message.topic}'.\n")
+
+    # if message.topic == mqtt_topic_topology:
+    #     print("Subiendo mensaje a Elasticsearch...")
+    #     upload_to_elasticsearch(message.payload.decode())
+        
+    # elif message.topic == mqtt_topic_behaviour:
+    #     print("Subiendo mensaje a Elasticsearch...")
+    #     upload_to_elasticsearch(message.payload.decode())
     # Subir el mensaje a Elasticsearch
     upload_to_elasticsearch(message.payload.decode())
     
@@ -76,12 +85,13 @@ config = parse_config_file("config.json")
 # Configurar las variables
 topology_path = config["topology_path"]
 behaviour_path = config["behaviour_path"]
-#mgmt_path = config["mgmt_path"]
+mgmt_path = config["mgmt_path"]
 
 mqtt_broker_ip = config["mqtt_broker_ip"]
 mqtt_broker_port = config["mqtt_broker_port"]
 
-mqtt_topic = "TOPOLOGY"  # Nombre del tema MQTT al que se suscribirá
+mqtt_topic_topology = "TOPOLOGY"  # Nombre del tema MQTT al que se publicará la topología
+mqtt_topic_behaviour = "BEHAVIOUR"  # Nombre del tema MQTT para el comportamiento
 
 # Crear un cliente MQTT
 client = mqtt.Client()
@@ -93,7 +103,7 @@ client.on_message = on_message
 client.connect(mqtt_broker_ip, mqtt_broker_port, 60)
 
 # Ejecutar la función para suscribirse al tema TOPOLOGY
-subscribe_to_topic(client, mqtt_topic)
+subscribe_to_topic(client, mqtt_topic_topology)
 
 # Mantener la conexión activa y procesar los mensajes entrantes
 client.loop_forever()

@@ -76,13 +76,13 @@ El Sistema Controlador trabaja junto al broker MQTT, la base de datos ElasticSea
 
 Este sistema utiliza el mismo fichero de configuración que el sistema DANA, para definir parámetros como la ubicación de los archivos JSON de topología y comportamiento, la dirección IP y el puerto del Broker MQTT, entre otros. Nada más iniciar la ejecución, el controlador se suscribe al topic "TOPOLOGY" mediante el cliente MQTT de Paho. 
 
-Al igual que el sistema DANA, este sistema hace uso de la biblioteca watchdog, que se encarga de monitorizar el directorio de gestión, para detectar cualquier cambio que se produzca en el archivo de configuración (mgmt.json), y de esta forma, poder controlar el cambio de estado y monitorización del directorio correspondiente. 
+Cuando el sistema detecta que se ha recibido un archivo json de datos en el topic TOPOLOGY, lo procesa para obtener el listado de network_element y posteriormente, inserta esta información en la base de datos ElasticSearch.
 
-Una vez se encuentra en estado 0, watchdog pasa a monitorizar el directorio de topología, para detectar cuando se recibe un archivo json de datos en el topic TOPOLOGY. A continuación, lo procesa para obtener el listado de network_element y posteriormente, inserta esta información en la base de datos ElasticSearch.
+Una vez finalizada la insercción del json en elasticsearch, el controlador se suscribe a los 'n' topics relacionados con BEHA_DT2MANO/AGENT/NET_ELEM_XXX, donde 'n' es el número de network_element obtenidos de la topología.
 
-Una vez finalizada la insercción del json en elasticsearch, se produce un cambio de estado (estado_agente==1), y el controlador se suscribe a los 'n' topics relacionados con BEHA_DT2MANO/AGENT/NET_ELEM_XXX, donde 'n' es el número de network_element obtenidos de la topología. Watchdog pasa a monitorizar el directorio de comportamiento, a la espera de que lleguen los jsons de datos de comportamiento a los topics BEHA_PT2MANO/AGENT/NET_ELEM_XXX. 
+Cuando el sistema detecta que se ha recibido un archivo json de datos de comportamiento en alguno de los topics BEHA_PT2MANO/AGENT/NET_ELEM_XXX, realiza una copia del fichero y lo procesa para agregar un campo "comm_channel = PT2MANO" y posteriormente insertarlo en la base de datos ElasticSearch en el índice correspondiente. 
 
-A continuación, el controlador los procesa para agregar un campo "comm_channel = PT2MANO" y los inserta en la base de datos ElasticSearch en el índice correspondiente. Además, publica esta información en el topic BEHA_MANO2DT/AGENT/NET_ELEM_XXX, de acuerdo a una acción condicionada, como el modo de funcionamiento establecido en el fichero de configuración o una solicitud de confirmación del operador.
+Una vez se han insertado los datos en elasticsearch, se publica el json original recibido en el topic BEHA_MANO2DT/AGENT/NET_ELEM_XXX, de acuerdo a una acción condicionada, como el modo de funcionamiento establecido en el fichero de configuración o una solicitud de confirmación del operador.
 
 El Sistema Controlador permite la comunicación bidireccional entre el Gemelo Físico y el Gemelo Digital, facilitando la sincronización de datos y el intercambio de información en tiempo real.
 </div>
@@ -115,7 +115,7 @@ cd tfg-digital-twins
 sudo pytho3 sistemaControlador.py
 ```
 
-En una nueva terminal:
+En una nueva terminal, también desde el directorio tfg-digital-twins/:
 
 5. Ejecutar el script del sistema DANA
 
