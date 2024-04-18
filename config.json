@@ -1,8 +1,12 @@
 {
 
-    "topology_path": "/home/silvia/tfg-digital-twins/topology", 
+    "topology_path": "/home/silvia/tfg-digital-twins/topology",
+    
+    "topology_message_file_path": "/home/silvia/tfg-digital-twins/topology/message.json",
   
     "behaviour_path": "/home/silvia/tfg-digital-twins/behaviour", 
+
+    "behaviour_message_file_path": "/home/silvia/tfg-digital-twins/behaviour/message.json",
 
     "mgmt_path": "/home/silvia/tfg-digital-twins/mgmt/mgmt.json",
 
