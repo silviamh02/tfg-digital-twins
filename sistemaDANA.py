@@ -92,6 +92,22 @@ def publish_json_file(client, topic, file_path):
         print(f"Error: No se pudo encontrar el archivo: {file_path}.\n")
 
 
+# Función para manejar la suscripción a un topic
+def subscribe_to_topic(client, topic):
+    subscribed = False
+    while not subscribed: # Mientras no esté suscrito al tema
+        try:
+            # Intentar suscribirse al tema
+            client.subscribe(topic)
+            print(f"Subscrito al topic {topic}.\n")
+            subscribed = True
+        except Exception as e:
+            # Manejar cualquier excepción y esperar antes de intentar de nuevo
+            print(f"No se pudo suscribir al tema {topic}. Error: {e}.\n")
+            print("Intentando nuevamente en 5 segundos...\n")
+            time.sleep(5)
+            
+
 # Función para verificar el estado del agente
 def verificar_estado_agente(mgmt_json_path):
     try:
@@ -173,6 +189,49 @@ def trocear_json(behaviour_json_path, network_elements, mqtt_client, mqtt_topics
         message = json.dumps(network_element_json)
         mqtt_client.publish(mqtt_topics[i], message)
         print(f"Publicando el JSON troceado en el tema {mqtt_topics[i]}.\n")
+        
+        # --------------------
+        # Obtener el número del network_element que se acaba de publicar
+        network_element_number = None
+        with open(behaviour_json_path, 'r') as file:
+            try:
+                json_data = json.load(file)
+                network_element_number = obtener_numero_network_element(json_data)
+            except json.decoder.JSONDecodeError as e:
+                print(f"Error al cargar el archivo JSON: {e}.")
+            except Exception as e:
+                print(f"Error: {e}")
+                
+        # Verificar si se obtuvo correctamente el número del network_element
+        if network_element_number is not None:
+            # Construir el topic con el número del network element
+            topic = "BEHA_MANO2DT/AGENT/NET_ELEM_" + str(network_element_number)
+            # Subscribirse al tema MQTT
+            subscribe_to_topic(client, topic)
+        
+        
+# Función para obtener el número del network_element
+def obtener_numero_network_element(json_data):
+    try:
+        # Obtener el único elemento de red del JSON
+        network_element = json_data.get("network_elements", [])[0]
+
+        # Obtener el id del elemento de red
+        id_elemento = network_element.get("id", "")
+
+        # Si el id tiene el formato "network_element_XXX"
+        if id_elemento.startswith("network_element_"):
+            # Extraer el sufijo numérico y convertirlo a entero
+            numero = int(id_elemento.split("_")[-1])
+            return numero
+
+        else:
+            print("El formato del ID del network_element no es válido.\n")
+            return None
+
+    except Exception as e:
+        print(f"Error al obtener el número del network_element: {e}.\n")
+        return None
 
 
 # Función watchdog que monitoriza los directorios 
@@ -247,6 +306,7 @@ def watchdog(client, mqtt_topic_topology, mgmt_path, mgmt_json_path, topology_pa
                 trocear_json(event.src_path, network_elements, client, mqtt_topics)
                 #publish_json_file(client, mqtt_topics, event.src_path)
                 #print(f"Publicando el archivo {event.src_path} en el tema {mqtt_topic_behaviour}.\n")
+                
 
     # Instanciar un observador para detectar la modificación de archivos en mgmt_path
     event_handler_mgmt = FileSystemEventHandler()
