@@ -1,8 +1,7 @@
-{
-    "network_elements": [
+{   "network_elements": [
       {
         "id": "network_element_001",
-        "comm_channel": "PT2MANO",
+        "type_json": "topology",
         "timestamp": "2024-04-17T10:00:00+00:00",
         "flag_status": "1",
         "is_generic_hw": "true",
@@ -62,7 +61,7 @@
       },
       {
         "id": "network_element_002",
-        "comm_channel": "PT2MANO",
+        "type_json": "topology",
         "timestamp": "2024-04-17T10:05:00+00:00",
         "flag_status": "0",
         "is_generic_hw": "false",
@@ -122,7 +121,7 @@
       },
       {
         "id": "network_element_003",
-        "comm_channel": "PT2MANO",
+        "type_json": "topology",
         "timestamp": "2024-04-17T10:10:00+00:00",
         "flag_status": "1",
         "is_generic_hw": "false",
