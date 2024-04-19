@@ -61,22 +61,6 @@ def upload_topology_to_elasticsearch(payload):
         print("Error al subir el documento a Elasticsearch:", e, "\n")
         
 
-# Función para subir el mensaje a Elasticsearch
-def upload_behaviour_to_elasticsearch(payload):
-    try:
-        # Parsear el JSON recibido
-        json_data = json.loads(payload)
-
-        # Conectar a Elasticsearch
-        es = Elasticsearch(hosts=["http://localhost:9200"])
-
-        # Subir el JSON a Elasticsearch
-        res = es.index(index="behaviour", body=json_data)
-        print("Documento subido correctamente a Elasticsearch:", res, "\n")
-        
-    except Exception as e:
-        print("Error al subir el documento a Elasticsearch:", e, "\n")
-        
 # # Función para subir el mensaje a Elasticsearch
 # def upload_behaviour_to_elasticsearch(payload):
 #     try:
@@ -85,24 +69,46 @@ def upload_behaviour_to_elasticsearch(payload):
 
 #         # Conectar a Elasticsearch
 #         es = Elasticsearch(hosts=["http://localhost:9200"])
-#         print("Conexión establecido con Elasticsearch.\n")
 
-#         # Extraer el número del elemento de red del JSON
-#         network_element_number = int(json_data["id"].split("_")[-1])
-#         print("Número del elemento de red:", network_element_number, "\n")
-            
-#         # Construir el nombre del índice utilizando el número del elemento de red
-#         index_name = f"beha_pt2mano/agent/net_elem_{network_element_number}"
-#         print("Nombre del índice:", index_name, "\n")
-            
-#         # Subir el JSON a Elasticsearch en el índice correspondiente
-#         res = es.index(index=index_name, body=json_data)
+#         # Subir el JSON a Elasticsearch
+#         res = es.index(index="behaviour", body=json_data)
 #         print("Documento subido correctamente a Elasticsearch:", res, "\n")
         
 #     except Exception as e:
 #         print("Error al subir el documento a Elasticsearch:", e, "\n")
-  
-  
+        
+# Función para subir el mensaje a Elasticsearch
+def upload_behaviour_to_elasticsearch(payload):
+    try:
+        # Parsear el JSON recibido
+        json_data = json.loads(payload)
+
+        # Conectar a Elasticsearch
+        es = Elasticsearch(hosts=["http://localhost:9200"])
+        
+        # Convertir el payload a un diccionario
+        payload_dict = json.loads(payload)
+            
+        # Obtener el número del network_element, del mensaje original
+        network_element_number = obtener_numero_network_element(payload_dict)
+        
+        # Verificar si se obtuvo correctamente el número del network_element
+        if network_element_number is not None:
+            # Construir el index con el número del network element
+            index = "beha_pt2mano-agent-net_elem_" + str(network_element_number)
+            
+            # Subir el JSON a Elasticsearch
+            res = es.index(index=index, body=json_data)
+            print("Documento subido correctamente a Elasticsearch:", res, "\n")
+            print(f"El mensaje se ha subido a Elasticsearch en el index {index}.\n")    
+            
+        else:
+            print("No se pudo obtener el número del network_element para construir el topic.\n")
+
+    except Exception as e:
+        print("Error al subir el documento a Elasticsearch:", e, "\n")
+
+ 
 # Función para obtener la lista de elementos de red
 def obtener_network_elements(payload):
     try:
@@ -148,6 +154,30 @@ def construir_indices_elasticsearch(prefijo, array):
     
     return indices_elasticsearch
 
+
+# Función para obtener el número del network_element
+def obtener_numero_network_element(json_data):
+    try:
+        # Obtener el único elemento de red del JSON
+        network_element = json_data.get("network_elements", [])[0]
+
+        # Obtener el id del elemento de red
+        id_elemento = network_element.get("id", "")
+
+        # Si el id tiene el formato "network_element_XXX"
+        if id_elemento.startswith("network_element_"):
+            # Extraer el sufijo numérico y convertirlo a entero
+            numero = int(id_elemento.split("_")[-1])
+            return numero
+
+        else:
+            print("El formato del ID del network_element no es válido.\n")
+            return None
+
+    except Exception as e:
+        print(f"Error al obtener el número del network_element: {e}.\n")
+        return None
+
        
 # Función de callback para manejar los mensajes recibidos
 def on_message(client, userdata, message):
@@ -166,35 +196,71 @@ def on_message(client, userdata, message):
         mqtt_topics = construir_temas_MQTT("BEHA_PT2MANO/AGENT/NET_ELEM_", network_elements)
         print("El array de temas contiene:", mqtt_topics,".\n")
         
-        # Subir el mensaje a Elasticsearch
-        upload_topology_to_elasticsearch(message.payload.decode())
-        print("El mensaje se ha subido a Elasticsearch en el index 'topology'.\n")
-        
         # Suscribirse a los temas MQTT de los network_elements
         for topic in mqtt_topics:
             subscribe_to_topic(client, topic)
+            
+        # Subir el mensaje a Elasticsearch
+        upload_topology_to_elasticsearch(message.payload.decode())
+        print("El mensaje se ha subido a Elasticsearch en el index 'topology'.\n")
                     
     # Si el mensaje proviene de un network_element
     elif message.topic in mqtt_topics:
         try:
+            # SUBIR MENSAJE A ELASTICSEARCH -----------------------------------------------------------------------------------------------
             # Copiar el mensaje original
             modified_payload = message.payload
-            
+                
             # Convertir el payload a un diccionario
             payload_dict = json.loads(modified_payload)
-            
+                
             # Agregar el campo 'comm_channel' al diccionario
             payload_dict['comm_channel'] = 'PT2MANO'
-            
+                
             # Convertir el diccionario modificado de vuelta a JSON
             modified_payload = json.dumps(payload_dict)
-            
-            # # Obtener los indices de elasticsearch para los network_elements
-            # indices_elasticsearch = construir_indices_elasticsearch("beha_pt2mano/agent/net_elem_", network_elements)
-            # print("El array de indices contiene:", indices_elasticsearch,".\n")
-            
+                
+                
+                # # Obtener los indices de elasticsearch para los network_elements
+                # indices_elasticsearch = construir_indices_elasticsearch("beha_pt2mano/agent/net_elem_", network_elements)
+                # print("El array de indices contiene:", indices_elasticsearch,".\n")
+                
+            # Subir el mensaje a Elasticsearch
             upload_behaviour_to_elasticsearch(modified_payload)
-            print("El mensaje se ha subido a Elasticsearch en el index 'behaviour'.\n")
+            #print("El mensaje se ha subido a Elasticsearch en el index 'behaviour'.\n")
+                
+            # PUBLICAR MENSAJE EN TOPIC -----------------------------------------------------------------------------------------------
+            # Convertir el payload a un diccionario
+            payload_dict = json.loads(message.payload)
+            
+            # Obtener el número del network_element, del mensaje original
+            network_element_number = obtener_numero_network_element(payload_dict)
+            
+            # Verificar si se obtuvo correctamente el número del network_element
+            if network_element_number is not None:
+                # Construir el topic con el número del network element
+                topic = "BEHA_MANO2DT/AGENT/NET_ELEM_" + str(network_element_number)
+                
+                # # Publicar el mensaje original en el topic BEHA_MANO2DT/AGENT/NET_ELEM_XXX
+                # client.publish(topic, modified_payload)
+                # print(f"Mensaje publicado en el topic '{topic}'.\n")
+                # print(f"Mensaje original: {str(message.payload.decode())}.\n")
+                # Solicitar confirmación al usuario antes de proceder
+                while True:
+                    respuesta = input(f"¿Desea proceder con la publicación del archivo en el topic '{topic}'? (S/N): ").strip().lower()
+                    if respuesta == 's':
+                        # Publicar el mensaje original en el topic BEHA_MANO2DT/AGENT/NET_ELEM_XXX
+                        client.publish(topic, message.payload)
+                        print(f"Mensaje publicado en el topic '{topic}'.\n")
+                        print(f"Mensaje original: {str(message.payload.decode())}.\n")
+                        break
+                    elif respuesta == 'n':
+                        print("La publicación del archivo ha sido cancelada.\n")
+                        break
+                    else:
+                        print("Por favor, responda con 'S' para sí o 'N' para no.")
+            else:
+                print("No se pudo obtener el número del network_element para construir el topic.\n")
         
         except json.decoder.JSONDecodeError as e:
             print(f"Error al decodificar el JSON del mensaje: {e}.\n")
