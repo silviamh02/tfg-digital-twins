@@ -234,55 +234,50 @@ def obtener_numero_network_element(json_data):
         return None
 
 
-# Función watchdog que monitoriza los directorios 
-def watchdog(client, mqtt_topic_topology, mgmt_path, mgmt_json_path, topology_path, behaviour_path):
+# Función watchdog que monitoriza el directorio de gestión 
+def watchdog_mgmt(client, mgmt_path, mgmt_json_path):
     # Crear el observador de cambios en el sistema de archivos
     observer = Observer()
 
-    # Diccionario para almacenar las observaciones activas
-    observaciones_activas = {}
+    # Función para manejar los eventos    
+    def handle_directory_change(event):
+        nonlocal observer
+        if not event.is_directory and event.src_path.endswith('.json'):
+            if event.src_path == mgmt_json_path:  # Modificación en el archivo mgmt.json
+                estado_agente = verificar_estado_agente(mgmt_json_path)
+                if estado_agente == 0:
+                    # Se llama a watchdog_topology
+                    watchdog_topology(client, mqtt_topic_topology, topology_path)
+                    
+                elif estado_agente == 1:
+                    # Se llama a watchdog_behaviour
+                    watchdog_behaviour(client, behaviour_path)
+                    
+            
+    # Instanciar un observador para detectar la modificación de archivos en mgmt_path
+    event_handler_mgmt = FileSystemEventHandler()
+    event_handler_mgmt.on_modified = handle_directory_change
 
-    # Función para iniciar la observación
-    def iniciar_observacion(event, directorio):
-        if directorio not in observaciones_activas:
-            observer.schedule(event, directorio, recursive=False)
-            observaciones_activas[directorio] = True
-            print(f"La observación en {directorio} se ha iniciado.\n")
-        else:
-            print(f"La observación en {directorio} ya está en ejecución.\n")
+    # Programar la observación del directorio mgmt_path
+    observer.schedule(event_handler_mgmt, mgmt_path, recursive=False)
+    
+    observer.start()
+    print(f"Watchdog está monitoreando el directorio: {mgmt_path}.\n")
 
-    # # Función para detener la observación
-    # def detener_observacion(observer, event_handler, directorio):
-    #     if directorio in observaciones_activas:
-    #         print(f"Deteniendo observación en el directorio: {directorio}.\n")
-    #         observer.unschedule(event_handler)
-    #         del observaciones_activas[directorio]
-    #         print(f"La observación en {directorio} se ha detenido.\n")
-    #     else:
-    #         print(f"No hay observación en {directorio} para detener.\n")
+    return observer
+
+
+# Función watchdog que monitoriza los directorios 
+def watchdog_topology(client, mqtt_topic_topology, topology_path):
+    # Crear el observador de cambios en el sistema de archivos
+    observer = Observer()
 
     # Función para manejar los eventos    
     def handle_directory_change(event):
         nonlocal observer
         global topology_file_path
         if not event.is_directory and event.src_path.endswith('.json'):
-            if event.src_path == mgmt_json_path:  # Modificación en el archivo mgmt.json
-                estado_agente = verificar_estado_agente(mgmt_json_path)
-                if estado_agente == 0:
-                    # Programar la observación de topología si no está programada
-                    iniciar_observacion(event_handler_topology, topology_path)
-                    
-                    # Cancelar la observación de comportamiento si está programada
-                    #detener_observacion(observer, event_handler_behaviour, behaviour_path)
-                    
-                elif estado_agente == 1:
-                    # Programar la observación de comportamiento si no está programada
-                    iniciar_observacion(event_handler_behaviour, behaviour_path)
-                    
-                    # Cancelar la observación de topología si está programada
-                    #detener_observacion(observer, event_handler_topology, topology_path)
-                    
-            elif event.src_path.startswith(topology_path) and verificar_estado_agente(mgmt_json_path) == 0: 
+            if event.src_path.startswith(topology_path) and verificar_estado_agente(mgmt_json_path) == 0: 
                 # Guardar la ruta del archivo JSON de topología
                 topology_file_path = event.src_path
                 
@@ -290,10 +285,36 @@ def watchdog(client, mqtt_topic_topology, mgmt_path, mgmt_json_path, topology_pa
                 publish_json_file(client, mqtt_topic_topology, event.src_path)
                 print(f"Publicando el archivo {event.src_path} en el tema {mqtt_topic_topology}.\n")
                 
+                # Detener la observación del directorio topology_path
+                observer.stop()
+                print(f"La monitorización del directorio {topology_path}, se ha detenido.\n")
+                
                 # Cambiar el estado del agente a 1
                 cambiar_estado_agente(mgmt_json_path, 1)
                 
-            elif event.src_path.startswith(behaviour_path) and verificar_estado_agente(mgmt_json_path) == 1:
+    # Instanciar un observador para detectar la creación de archivos en topology_path
+    event_handler_topology = FileSystemEventHandler()
+    event_handler_topology.on_created = handle_directory_change
+
+    # Programar la observación del directorio topology_path
+    observer.schedule(event_handler_topology, topology_path, recursive=False)
+
+    observer.start()
+    print(f"Ahora watchdog está monitoreando los directorios: {mgmt_path} y {topology_path}.\n")
+
+    return observer
+
+
+# Función watchdog que monitoriza los directorios 
+def watchdog_behaviour(client, behaviour_path):
+    # Crear el observador de cambios en el sistema de archivos
+    observer = Observer()
+
+    # Función para manejar los eventos    
+    def handle_directory_change(event):
+        nonlocal observer
+        if not event.is_directory and event.src_path.endswith('.json'):
+            if event.src_path.startswith(behaviour_path) and verificar_estado_agente(mgmt_json_path) == 1:
                 # Obtener la lista de network_elements  
                 network_elements = obtener_network_elements(topology_file_path)
                 print("El array network_elements contiene:", network_elements,".\n")
@@ -306,29 +327,17 @@ def watchdog(client, mqtt_topic_topology, mgmt_path, mgmt_json_path, topology_pa
                 trocear_json(event.src_path, network_elements, client, mqtt_topics)
                 #publish_json_file(client, mqtt_topics, event.src_path)
                 #print(f"Publicando el archivo {event.src_path} en el tema {mqtt_topic_behaviour}.\n")
-                
 
-    # Instanciar un observador para detectar la modificación de archivos en mgmt_path
-    event_handler_mgmt = FileSystemEventHandler()
-    event_handler_mgmt.on_modified = handle_directory_change
-
-    # Instanciar un observador para detectar la creación de archivos en topology_path
-    event_handler_topology = FileSystemEventHandler()
-    event_handler_topology.on_created = handle_directory_change
-
+    
     # Instanciar un observador para detectar la creación de archivos en behaviour_path
     event_handler_behaviour = FileSystemEventHandler()
     event_handler_behaviour.on_created = handle_directory_change
 
-    # Programar la observación del directorio mgmt_path
-    observer.schedule(event_handler_mgmt, mgmt_path, recursive=False)
+    # Programar la observación del directorio behaviour_path
+    observer.schedule(event_handler_behaviour, behaviour_path, recursive=False)
     
-    # Iniciar la observación del directorio topology_path
-    #iniciar_observacion(event_handler_topology, topology_path)
-    observer.schedule(event_handler_topology, topology_path, recursive=False)
-
     observer.start()
-    print(f"Inicialmente watchdog está monitoreando los directorios: {mgmt_path} y {topology_path}.\n")
+    print(f"Ahora watchdog está monitoreando los directorios: {mgmt_path} y {behaviour_path}.\n")
 
     return observer
 
@@ -364,8 +373,9 @@ client.connect(mqtt_broker_ip, mqtt_broker_port, 60)
 estado_agente = verificar_estado_agente(mgmt_json_path)
     
 # Configurar Watchdog
-# observer = watchdog(client, mqtt_topic, topology_path)
-observer = watchdog(client, mqtt_topic_topology, mgmt_path, mgmt_json_path, topology_path, behaviour_path)
+observer_mgmt = watchdog_mgmt(client, mgmt_path, mgmt_json_path) 
+observer_topology = watchdog_topology(client, mqtt_topic_topology, topology_path)
+#observer_behaviour = watchdog_behaviour(client, behaviour_path)
 
 # Configurar el intervalo de tiempo en segundos (1 minuto = 60 segundos)
 intervalo_tiempo = 60
