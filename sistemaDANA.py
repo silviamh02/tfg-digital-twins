@@ -2,6 +2,7 @@ import os
 import json
 import time
 import paho.mqtt.client as mqtt
+import subprocess
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -28,15 +29,15 @@ def generate_unique_filename_topology():
     return filename
 
 
-# Función para generar el nombre único del JSON de comportamiento
-def generate_unique_filename_behaviour():
-    # Obtener la marca de tiempo actual
-    timestamp = int(time.time()) 
+# # Función para generar el nombre único del JSON de comportamiento
+# def generate_unique_filename_behaviour():
+#     # Obtener la marca de tiempo actual
+#     timestamp = int(time.time()) 
     
-    # Generar el nombre de archivo único
-    filename = f"BEHA_{timestamp}.json"
+#     # Generar el nombre de archivo único
+#     filename = f"BEHA_{timestamp}.json"
     
-    return filename
+#     return filename
 
 
 # Función para generar JSON de topología
@@ -59,24 +60,24 @@ def generate_topology_json(topology_path, topology_message_file_path):
     return file_path
 
 
-# Función para generar JSON de comportamiento
-def generate_behaviour_json(behaviour_path, behaviour_message_file_path):
-    # Leer el contenido del archivo message.json
-    with open(behaviour_message_file_path, 'r') as message_file:
-        message_data = json.load(message_file)
+# # Función para generar JSON de comportamiento
+# def generate_behaviour_json(behaviour_path, behaviour_message_file_path):
+#     # Leer el contenido del archivo message.json
+#     with open(behaviour_message_file_path, 'r') as message_file:
+#         message_data = json.load(message_file)
     
-    # Obtener el nombre único del archivo
-    filename = generate_unique_filename_behaviour()
+#     # Obtener el nombre único del archivo
+#     filename = generate_unique_filename_behaviour()
     
-    # Combinar el nombre de archivo con el path de topología
-    file_path = os.path.join(behaviour_path, filename)
+#     # Combinar el nombre de archivo con el path de topología
+#     file_path = os.path.join(behaviour_path, filename)
     
-    # Escribir el JSON en el archivo
-    with open(file_path, 'w') as json_file:
-        json.dump(message_data, json_file, indent=4)
+#     # Escribir el JSON en el archivo
+#     with open(file_path, 'w') as json_file:
+#         json.dump(message_data, json_file, indent=4)
     
-    # Devolver la ruta completa del archivo generado
-    return file_path
+#     # Devolver la ruta completa del archivo generado
+#     return file_path
 
 
 # Función para publicar el archivo JSON detectado en un tema MQTT
@@ -174,42 +175,6 @@ def construir_temas_MQTT(prefijo, array):
     return temas_MQTT
 
 
-# Función para trocear el archivo JSON y publicarlo en los temas MQTT correspondientes
-def trocear_json(behaviour_json_path, network_elements, mqtt_client, mqtt_topics):
-    with open(behaviour_json_path, 'r') as file:
-        behaviour_json = json.load(file)
-    
-    for i, network_element in enumerate(network_elements):
-        # Crear un nuevo JSON solo con el network_element actual
-        network_element_json = {
-            "network_elements": [behaviour_json["network_elements"][i]]
-        }
-        
-        # Publicar el nuevo JSON en el tema MQTT correspondiente
-        message = json.dumps(network_element_json)
-        mqtt_client.publish(mqtt_topics[i], message)
-        print(f"Publicando el JSON troceado en el tema {mqtt_topics[i]}.\n")
-        
-        # --------------------
-        # Obtener el número del network_element que se acaba de publicar
-        network_element_number = None
-        with open(behaviour_json_path, 'r') as file:
-            try:
-                json_data = json.load(file)
-                network_element_number = obtener_numero_network_element(json_data)
-            except json.decoder.JSONDecodeError as e:
-                print(f"Error al cargar el archivo JSON: {e}.")
-            except Exception as e:
-                print(f"Error: {e}")
-                
-        # Verificar si se obtuvo correctamente el número del network_element
-        if network_element_number is not None:
-            # Construir el topic con el número del network element
-            topic = "BEHA_MANO2DT/AGENT/NET_ELEM_" + str(network_element_number)
-            # Subscribirse al tema MQTT
-            subscribe_to_topic(client, topic)
-        
-        
 # Función para obtener el número del network_element
 def obtener_numero_network_element(json_data):
     try:
@@ -232,8 +197,106 @@ def obtener_numero_network_element(json_data):
     except Exception as e:
         print(f"Error al obtener el número del network_element: {e}.\n")
         return None
+    
+    
+# Función para obtener el número del network_element del nombre del archivo
+def obtener_numero_network_element_from_path(file_path):
+    try:
+        # Extraer el nombre del archivo de la ruta completa
+        nombre_archivo = os.path.basename(file_path)
+        
+        # Dividir el nombre del archivo usando '_' como separador
+        partes_nombre = nombre_archivo.split("_")
+        
+        # Verificar si hay al menos tres partes en el nombre del archivo
+        if len(partes_nombre) >= 3:
+            # Extraer la tercera parte
+            numero = partes_nombre[2]
+            return numero
+        else:
+            print("El nombre del archivo no tiene el formato esperado.\n")
+            return None
+    except Exception as e:
+        print(f"Error al obtener el número del network_element: {e}\n")
+        return None
+    
+
+# # Función para trocear el archivo JSON y publicarlo en los temas MQTT correspondientes
+# def trocear_json(behaviour_json_path, network_elements, mqtt_client, mqtt_topics):
+#     with open(behaviour_json_path, 'r') as file:
+#         behaviour_json = json.load(file)
+    
+#     for i, network_element in enumerate(network_elements):
+#         # Crear un nuevo JSON solo con el network_element actual
+#         network_element_json = {
+#             "network_elements": [behaviour_json["network_elements"][i]]
+#         }
+        
+#         # Publicar el nuevo JSON en el tema MQTT correspondiente
+#         message = json.dumps(network_element_json)
+#         mqtt_client.publish(mqtt_topics[i], message)
+#         print(f"Publicando el JSON troceado en el tema {mqtt_topics[i]}.\n")
+        
+#         # --------------------
+#         # Obtener el número del network_element que se acaba de publicar
+#         network_element_number = None
+#         with open(behaviour_json_path, 'r') as file:
+#             try:
+#                 json_data = json.load(file)
+#                 network_element_number = obtener_numero_network_element(json_data)
+#             except json.decoder.JSONDecodeError as e:
+#                 print(f"Error al cargar el archivo JSON: {e}.")
+#             except Exception as e:
+#                 print(f"Error: {e}")
+                
+#         # Verificar si se obtuvo correctamente el número del network_element
+#         if network_element_number is not None:
+#             # Construir el topic con el número del network element
+#             topic = "BEHA_MANO2DT/AGENT/NET_ELEM_" + str(network_element_number)
+#             # Subscribirse al tema MQTT
+#             subscribe_to_topic(client, topic)
 
 
+# Define un conjunto para almacenar los temas a los que te has suscrito
+topics_subscribed = set()
+
+# Función para trocear el archivo JSON y publicarlo en los temas MQTT correspondientes
+def publish_json_behaviour(behaviour_json_path, mqtt_client, mqtt_topics):
+    network_element_number = None
+    with open(behaviour_json_path, 'r') as file:
+        try:
+            json_data = json.load(file)
+            #network_element_number = obtener_numero_network_element(json_data)
+            network_element_number = obtener_numero_network_element_from_path(behaviour_json_path)
+        except json.decoder.JSONDecodeError as e:
+            print(f"Error al cargar el archivo JSON: {e}.")
+        except Exception as e:
+            print(f"Error: {e}")
+    
+    for topic in mqtt_topics:
+        # Dividir el elemento usando '_' como separador y seleccionar la última parte
+        numero = topic.split('_')[-1]
+        #print("El número del network element es:", numero,".\n")
+        if network_element_number == numero:
+            # Convertir json_data a una cadena JSON
+            json_message = json.dumps(json_data)
+            # Publicar el nuevo JSON en el tema MQTT correspondiente
+            mqtt_client.publish(topic, json_message)
+            print(f"Publicando el JSON del network element {network_element_number} en el tema {topic}.\n")
+        
+        # Verificar si se obtuvo correctamente el número del network_element
+        if network_element_number is not None:
+            # Construir el topic con el número del network element
+            topic = "BEHA_MANO2DT/AGENT/NET_ELEM_" + str(network_element_number)
+            # Subscribirse al tema MQTT
+            #subscribe_to_topic(client, topic)
+            global topics_subscribed
+            if topic not in topics_subscribed:
+                subscribe_to_topic(client, topic)
+                topics_subscribed.add(topic)
+            
+
+        
 # Función watchdog que monitoriza el directorio de gestión 
 def watchdog_mgmt(client, mgmt_path, mgmt_json_path):
     # Crear el observador de cambios en el sistema de archivos
@@ -317,16 +380,19 @@ def watchdog_behaviour(client, behaviour_path):
             if event.src_path.startswith(behaviour_path) and verificar_estado_agente(mgmt_json_path) == 1:
                 # Obtener la lista de network_elements  
                 network_elements = obtener_network_elements(topology_file_path)
-                print("El array network_elements contiene:", network_elements,".\n")
+                #print("El array network_elements contiene:", network_elements,".\n")
                   
                 # Obtener los temas MQTT para los network_elements
                 mqtt_topics = construir_temas_MQTT("BEHA_PT2MANO/AGENT/NET_ELEM_", network_elements)
-                print("El array de temas contiene:", mqtt_topics,".\n")
+                #print("El array de temas contiene:", mqtt_topics,".\n")
                 
                 # Trocear el archivo JSON y publicarlo en los temas MQTT
-                trocear_json(event.src_path, network_elements, client, mqtt_topics)
+                #trocear_json(event.src_path, network_elements, client, mqtt_topics)
+                
                 #publish_json_file(client, mqtt_topics, event.src_path)
-                #print(f"Publicando el archivo {event.src_path} en el tema {mqtt_topic_behaviour}.\n")
+                
+                publish_json_behaviour(event.src_path, client, mqtt_topics)
+                #print(f"Publicando el archivo {event.src_path}.\n")
 
     
     # Instanciar un observador para detectar la creación de archivos en behaviour_path
@@ -352,7 +418,8 @@ topology_path = config["topology_path"]
 topology_message_file_path = config["topology_message_file_path"]
 
 behaviour_path = config["behaviour_path"]
-behaviour_message_file_path = config["behaviour_message_file_path"]
+#behaviour_message_file_path = config["behaviour_message_file_path"]
+behaviour_generator_file_path = config["behaviour_generator_file_path"]
 
 mgmt_path = config["mgmt_path"]
 mgmt_json_path = config["mgmt_json_path"]
@@ -393,8 +460,11 @@ while True:
         
     # Estado 1: Generar el JSON de comportamiento
     if estado_agente == 1:
-        generate_behaviour_json(behaviour_path, behaviour_message_file_path)
-        print(f"Se ha generado un JSON de comportamiento en {behaviour_path}.\n")
+        # Generar los JSONs de comportamiento
+        #generate_behaviour_json(behaviour_path, behaviour_message_file_path)
+        #print(f"Se ha generado un JSON de comportamiento en {behaviour_path}.\n")
+        subprocess.run(["bash", behaviour_generator_file_path])
+        print(f"Se han generado N JSONs de comportamiento de cada uno de los 4 network elements en {behaviour_path}.\n")
             
     # Esperar el intervalo de tiempo
     time.sleep(intervalo_tiempo)
