@@ -103,6 +103,12 @@ git clone https://github.com/silviamh02/tfg-digital-twins.git
 sudo pip install -r requirements.txt
 ```
 
+3. Desplegar los contenedores kibana y elasticsearch
+```
+sudo docker start elasticsearch
+sudo docker start kibana
+```
+
 3. Moverse al directorio del repositorio
 
 ```
@@ -112,7 +118,7 @@ cd tfg-digital-twins
 4. Ejecutar el script del sistema Controlador
 
 ```
-sudo pytho3 sistemaControlador.py
+sudo python3 sistemaControlador.py
 ```
 
 En una nueva terminal, también desde el directorio tfg-digital-twins/:
@@ -120,7 +126,7 @@ En una nueva terminal, también desde el directorio tfg-digital-twins/:
 5. Ejecutar el script del sistema DANA
 
 ```
-sudo pytho3 sistemaDANA.py
+sudo python3 sistemaDANA.py
 ```
 
 

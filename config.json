@@ -6,6 +6,8 @@
   
     "behaviour_path": "/home/silvia/tfg-digital-twins/behaviour", 
 
+    "behaviour_generator_file_path": "/home/silvia/tfg-digital-twins/behaviour/generador_json_behaviour.sh",
+
     "behaviour_message_file_path": "/home/silvia/tfg-digital-twins/behaviour/message.json",
 
     "mgmt_path": "/home/silvia/tfg-digital-twins/mgmt/mgmt.json",

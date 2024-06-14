@@ -61,22 +61,6 @@ def upload_topology_to_elasticsearch(payload):
         print("Error al subir el documento a Elasticsearch:", e, "\n")
         
 
-# # Función para subir el mensaje a Elasticsearch
-# def upload_behaviour_to_elasticsearch(payload):
-#     try:
-#         # Parsear el JSON recibido
-#         json_data = json.loads(payload)
-
-#         # Conectar a Elasticsearch
-#         es = Elasticsearch(hosts=["http://localhost:9200"])
-
-#         # Subir el JSON a Elasticsearch
-#         res = es.index(index="behaviour", body=json_data)
-#         print("Documento subido correctamente a Elasticsearch:", res, "\n")
-        
-#     except Exception as e:
-#         print("Error al subir el documento a Elasticsearch:", e, "\n")
-        
 # Función para subir el mensaje a Elasticsearch
 def upload_behaviour_to_elasticsearch(payload):
     try:
@@ -85,28 +69,44 @@ def upload_behaviour_to_elasticsearch(payload):
 
         # Conectar a Elasticsearch
         es = Elasticsearch(hosts=["http://localhost:9200"])
-        
-        # Convertir el payload a un diccionario
-        payload_dict = json.loads(payload)
-            
-        # Obtener el número del network_element, del mensaje original
-        network_element_number = obtener_numero_network_element(payload_dict)
-        
-        # Verificar si se obtuvo correctamente el número del network_element
-        if network_element_number is not None:
-            # Construir el index con el número del network element
-            index = "beha_pt2mano-agent-net_elem_" + str(network_element_number)
-            
-            # Subir el JSON a Elasticsearch
-            res = es.index(index=index, body=json_data)
-            print("Documento subido correctamente a Elasticsearch:", res, "\n")
-            print(f"El mensaje se ha subido a Elasticsearch en el index {index}.\n")    
-            
-        else:
-            print("No se pudo obtener el número del network_element para construir el topic.\n")
 
+        # Subir el JSON a Elasticsearch
+        res = es.index(index="behaviour", body=json_data)
+        print("Documento subido correctamente a Elasticsearch:", res, "\n")
+        
     except Exception as e:
         print("Error al subir el documento a Elasticsearch:", e, "\n")
+        
+# # Función para subir el mensaje a Elasticsearch
+# def upload_behaviour_to_elasticsearch(payload):
+#     try:
+#         # Parsear el JSON recibido
+#         json_data = json.loads(payload)
+
+#         # Conectar a Elasticsearch
+#         es = Elasticsearch(hosts=["http://localhost:9200"])
+        
+#         # Convertir el payload a un diccionario
+#         payload_dict = json.loads(payload)
+            
+#         # Obtener el número del network_element, del mensaje original
+#         network_element_number = obtener_numero_network_element(payload_dict)
+        
+#         # Verificar si se obtuvo correctamente el número del network_element
+#         if network_element_number is not None:
+#             # Construir el index con el número del network element
+#             index = "beha_pt2mano-agent-net_elem_" + str(network_element_number)
+            
+#             # Subir el JSON a Elasticsearch
+#             res = es.index(index=index, body=json_data)
+#             print("Documento subido correctamente a Elasticsearch:", res, "\n")
+#             print(f"El mensaje se ha subido a Elasticsearch en el index {index}.\n")    
+            
+#         else:
+#             print("No se pudo obtener el número del network_element para construir el topic.\n")
+
+#     except Exception as e:
+#         print("Error al subir el documento a Elasticsearch:", e, "\n")
 
  
 # Función para obtener la lista de elementos de red
@@ -155,33 +155,72 @@ def construir_indices_elasticsearch(prefijo, array):
     return indices_elasticsearch
 
 
-# Función para obtener el número del network_element
-def obtener_numero_network_element(json_data):
-    try:
-        # Obtener el único elemento de red del JSON
-        network_element = json_data.get("network_elements", [])[0]
+# # Función para obtener el número del network_element
+# def obtener_numero_network_element(json_data):
+#     try:
+#         # Obtener el único elemento de red del JSON
+#         network_element = json_data.get("network_elements", [])[0]
 
-        # Obtener el id del elemento de red
-        id_elemento = network_element.get("id", "")
+#         # Obtener el id del elemento de red
+#         id_elemento = network_element.get("id", "")
+
+#         # Si el id tiene el formato "network_element_XXX"
+#         if id_elemento.startswith("network_element_"):
+#             # Extraer el sufijo numérico y convertirlo a entero
+#             numero = int(id_elemento.split("_")[-1])
+#             return numero
+
+#         else:
+#             print("El formato del ID del network_element no es válido.\n")
+#             return None
+
+#     except Exception as e:
+#         print(f"Error al obtener el número del network_element: {e}.\n")
+#         return None
+    
+# # Función para obtener el número del network_element del nombre del archivo
+# def obtener_numero_network_element_from_filename(filename):
+#     try:
+#         # Dividir el nombre del archivo usando '_' como separador
+#         partes_nombre = filename.split("_")
+        
+#         # Verificar si hay al menos tres partes en el nombre del archivo
+#         if len(partes_nombre) >= 3:
+#             # Extraer la tercera parte
+#             numero = partes_nombre[2]
+#             return numero
+#         else:
+#             print("El nombre del archivo no tiene el formato esperado.\n")
+#             return None
+#     except Exception as e:
+#         print(f"Error al obtener el número del network_element: {e}\n")
+#         return None
+
+
+# Función para obtener el número del network_element 
+def obtener_numero_network_element_from_json(json_data):
+    try:
+        # Parsear el JSON
+        data = json.loads(json_data)
+        
+        # Obtener el valor del campo 'id'
+        id_elemento = data.get("net_element", {}).get("id", "")
 
         # Si el id tiene el formato "network_element_XXX"
         if id_elemento.startswith("network_element_"):
             # Extraer el sufijo numérico y convertirlo a entero
-            numero = int(id_elemento.split("_")[-1])
+            numero = id_elemento.split("_")[-1]
             return numero
-
         else:
             print("El formato del ID del network_element no es válido.\n")
             return None
-
     except Exception as e:
-        print(f"Error al obtener el número del network_element: {e}.\n")
+        print(f"Error al obtener el número del network_element: {e}\n")
         return None
 
        
 # Función de callback para manejar los mensajes recibidos
 def on_message(client, userdata, message):
-    #print(f"Mensaje recibido en el topic '{message.topic}': {str(message.payload.decode())}.\n")
     print(f"Mensaje recibido en el topic '{message.topic}'.\n")
     
     global network_elements
@@ -220,31 +259,26 @@ def on_message(client, userdata, message):
             # Convertir el diccionario modificado de vuelta a JSON
             modified_payload = json.dumps(payload_dict)
                 
-                
-                # # Obtener los indices de elasticsearch para los network_elements
-                # indices_elasticsearch = construir_indices_elasticsearch("beha_pt2mano/agent/net_elem_", network_elements)
-                # print("El array de indices contiene:", indices_elasticsearch,".\n")
-                
             # Subir el mensaje a Elasticsearch
             upload_behaviour_to_elasticsearch(modified_payload)
             #print("El mensaje se ha subido a Elasticsearch en el index 'behaviour'.\n")
                 
             # PUBLICAR MENSAJE EN TOPIC -----------------------------------------------------------------------------------------------
-            # Convertir el payload a un diccionario
-            payload_dict = json.loads(message.payload)
+            # # Convertir el payload a un diccionario
+            # payload_dict = json.loads(message.payload)
+            
+            # Convertir el payload a una cadena JSON
+            payload_json = message.payload.decode()
             
             # Obtener el número del network_element, del mensaje original
-            network_element_number = obtener_numero_network_element(payload_dict)
+            #network_element_number = obtener_numero_network_element(payload_dict)
+            network_element_number = obtener_numero_network_element_from_json(payload_json)
             
             # Verificar si se obtuvo correctamente el número del network_element
             if network_element_number is not None:
                 # Construir el topic con el número del network element
                 topic = "BEHA_MANO2DT/AGENT/NET_ELEM_" + str(network_element_number)
                 
-                # # Publicar el mensaje original en el topic BEHA_MANO2DT/AGENT/NET_ELEM_XXX
-                # client.publish(topic, modified_payload)
-                # print(f"Mensaje publicado en el topic '{topic}'.\n")
-                # print(f"Mensaje original: {str(message.payload.decode())}.\n")
                 # Solicitar confirmación al usuario antes de proceder
                 while True:
                     respuesta = input(f"¿Desea proceder con la publicación del archivo en el topic '{topic}'? (S/N): ").strip().lower()
