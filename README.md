@@ -104,7 +104,13 @@ sudo docker start kibana
 cd tfg-digital-twins
 ```
 
-4. Ejecutar el script del sistema Controlador
+4. Iniciar los contenedores de Elasticsearch y Kibana
+```
+sudo docker start elasticsearch
+sudo docker start kibana
+```
+
+5. Ejecutar el script del sistema Controlador
 
 ```
 sudo python3 sistemaControlador.py
@@ -112,7 +118,7 @@ sudo python3 sistemaControlador.py
 
 En una nueva terminal, también desde el directorio tfg-digital-twins/:
 
-5. Ejecutar el script del sistema DANA
+6. Ejecutar el script del sistema DANA
 
 ```
 sudo python3 sistemaDANA.py

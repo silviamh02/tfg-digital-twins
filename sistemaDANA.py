@@ -464,7 +464,7 @@ while True:
         #generate_behaviour_json(behaviour_path, behaviour_message_file_path)
         #print(f"Se ha generado un JSON de comportamiento en {behaviour_path}.\n")
         subprocess.run(["bash", behaviour_generator_file_path])
-        print(f"Se han generado N JSONs de comportamiento de cada uno de los 4 network elements en {behaviour_path}.\n")
+        #print(f"Se han generado N JSONs de comportamiento de cada uno de los 4 network elements en {behaviour_path}.\n")
             
     # Esperar el intervalo de tiempo
     time.sleep(intervalo_tiempo)
