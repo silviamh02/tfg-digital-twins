@@ -7,7 +7,7 @@
         "is_generic_hw": "true",
         "is_gateway": "false",
         "agent_behavior_data": {
-          "uuid": "caso_ii_001",
+          "uuid": "caso_i_001",
           "name": "user_equipment",
           "desc": "virtualmachine_001",
           "so": "ubuntu20.04",
@@ -67,7 +67,7 @@
         "is_generic_hw": "false",
         "is_gateway": "true",
         "agent_behavior_data": {
-          "uuid": "caso_ii_002",
+          "uuid": "caso_i_002",
           "name": "user_equipment_002",
           "desc": "virtualmachine_002",
           "so": "ubuntu20.04",
@@ -127,7 +127,7 @@
         "is_generic_hw": "false",
         "is_gateway": "true",
         "agent_behavior_data": {
-          "uuid": "caso_ii_003",
+          "uuid": "caso_i_003",
           "name": "user_equipment_003",
           "desc": "virtualmachine_003",
           "so": "ubuntu20.04",
@@ -187,7 +187,7 @@
         "is_generic_hw": "false",
         "is_gateway": "true",
         "agent_behavior_data": {
-          "uuid": "caso_ii_003",
+          "uuid": "caso_i_004",
           "name": "user_equipment_004",
           "desc": "virtualmachine_004",
           "so": "ubuntu20.04",
@@ -233,6 +233,66 @@
                 "details": {
                   "so": "ubuntu20.04LTS",
                   "connected_users": "2"
+                }
+              }
+            ]
+          }
+        }
+      }, 
+      {
+        "id": "network_element_005",
+        "type_json": "topology",
+        "timestamp": "2024-04-17T10:15:00+00:00",
+        "flag_status": "1",
+        "is_generic_hw": "true",
+        "is_gateway": "false",
+        "agent_behavior_data": {
+          "uuid": "caso_i_005",
+          "name": "user_equipment_005",
+          "desc": "virtualmachine_005",
+          "so": "ubuntu20.04",
+          "disk": "50GB",
+          "cpu": "8",
+          "ram": "16GB",
+          "virtualbox": {
+            "vms": [
+              {
+                "name": "vmachine_ue_005",
+                "status": "running",
+                "resources": {
+                  "cpu": "8",
+                  "ram": {
+                    "used": "8",
+                    "total": "16"
+                  },
+                  "disk": {
+                    "used": "25",
+                    "total": "50"
+                  }
+                },
+                "config": {
+                  "so": "ubuntu",
+                  "version": "20.04",
+                  "net": {
+                    "ens3": {
+                      "name": "ens3",
+                      "status": "connected",
+                      "ip_dir": "10.100.100.26",
+                      "adapter_type": "red_interna",
+                      "mapping_ports": ""
+                    },
+                    "ens9": {
+                      "name": "ens9",
+                      "status": "connected",
+                      "ip_dir": "10.200.1.5",
+                      "adapter_type": "red_interna",
+                      "mapping_ports": ""
+                    }
+                  }
+                },
+                "details": {
+                  "so": "ubuntu20.04LTS",
+                  "connected_users": "5"
                 }
               }
             ]
